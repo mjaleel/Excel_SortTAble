@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import io
 
 st.set_page_config(page_title="استخراج الأسماء الرباعية", layout="centered")
 
@@ -29,15 +30,14 @@ if st.button("📥 تحويل إلى Excel"):
         st.success(f"✅ تم استخراج {len(df)} اسمًا بنجاح.")
         st.dataframe(df)
 
-        @st.cache_data
-        def convert_df_to_excel(df):
-            return df.to_excel(index=False, engine="openpyxl")
-
-        excel_bytes = convert_df_to_excel(df)
+        # ✅ الحل: إنشاء ملف Excel في الذاكرة
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='أسماء')
 
         st.download_button(
             label="📤 تحميل ملف Excel",
-            data=excel_bytes,
+            data=output.getvalue(),
             file_name="اسماء_مستخرجة.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
